@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full Background Slideshow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #120136;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slideshow-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: background-image 1s ease-in-out;
+            z-index: -1; /* Keeps it in the background */
+        }
+
+        .overlay {
+            position: absolute;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7);
+        }
+
+        select {
+            padding: 10px;
+            font-size: 1rem;
+            background-color: #2c2c2c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            cursor: pointer;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+            transition: background-color 0.3s ease;
+        }
+
+        select:hover {
+            background-color: #444;
+        }
+
+        option {
+            background-color: #333;
+            color: white;
+        }
+
+        /* Fade-in transition for the dropdown */
+        select, option {
+            transition: background-color 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slideshow-container" id="slideshow-container"></div>
+
+    <div>
+        <select id="dropdown">
+            <option value="Suzuka">Suzuka</option>
+            <option value="Malmedy">Spa-francochamps</option>
+            <option value="Spielberg">Red Bull Ring</option>
+            <option value="Monza">Monza</option>
+            <option value="Towcester">Silverstone</option>
+            <option value="Lusail">Lusail International Circuit</option>
+        </select>
+    </div>
+
+    <script>
+        const apikey = "c3ccc911ddabab14afbb5a19484c0c01";
+        let weatherData = {};
+  
+        let options = document.getElementById("dropdown");
+        if(options){
+            options.addEventListener("change", async (event) => {
+                const Track = event.target.value;
+                let Data = await WeatherChecker(Track);
+                weatherData = { 
+                    city: Data.name,
+                    temp: Data.main.temp,
+                    humidity: Data.main.humidity,
+                    description: Data.weather[0].description,
+                    id: Data.weather[0].id
+                };
+                sceneSwitcher();
+            });
+        }
+
+        async function WeatherChecker(Track) {
+            const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${Track}&appid=${apikey}&units=metric`;
+            let Datas = await fetch(apiUrl);
+            let GG = await Datas.json();
+            return GG;
+        }
+
+        let i = 0;
+        const slideshow = [
+            "2021-Italian-Grand-Prix-Sunday.jpg",
+            "ae70bcc4-silverstone-f1.jpg",
+            "p002.jpg",
+            "P90510221-spa-francorchamps-bel-16th-to-18th-june-2023-bmw-motorrad-motorsport-fim-endurance-world-championshi-2250px.jpg",
+            "red-bull-ringcarmin-walcher-red-bull-ring-6-scaled.jpg",
+            "suzuka-circuit-home-of-the-formula-one-japanese-grand-prix_100719920.jpg"
+        ];
+
+        if(options){
+            function changeBackground() {
+                const container = document.getElementById("slideshow-container");
+                container.style.backgroundImage = `url('${slideshow[i]}')`;
+                i = (i + 1) % slideshow.length;
+            }
+        }
+
+        window.onload = function () {
+            changeBackground();
+            setInterval(changeBackground, 3000);
+        };
+
+        function TireStress(Temp) {
+            switch(true){
+                case (Temp > 0 && Temp <= 10): return "Minimal";
+                case (Temp > 10 && Temp <= 25): return "Low";
+                case (Temp > 25 && Temp <= 35): return "Medium";
+                case (Temp > 35 && Temp <= 45): return "High";
+                default: return "Unracable Temperatures";
+            }
+        }
+
+        function TireChoices(weatherID) {
+            switch(true){
+                case (weatherID >= 200 && weatherID < 300): return "Wets";
+                case (weatherID >= 300 && weatherID < 400): return "Inters";
+                case (weatherID >= 500 && weatherID < 600): return "Inters";
+                case (weatherID >= 600 && weatherID < 700): return "Unracable Conditions";
+                case (weatherID >= 700 && weatherID < 800): return "Inters";
+                case (weatherID == 800): return "Slicks";
+                case (weatherID >= 801 && weatherID < 810): return "Slicks";
+                default: return "Unracable conditions";
+            }
+        }
+
+        function sceneSwitcher() {
+            localStorage.setItem("Data", JSON.stringify(weatherData));
+            window.location.href = "TrackDisplayer.html";
+        }
+    </script>
+</body>
+</html>

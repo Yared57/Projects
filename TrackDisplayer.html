@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Racing Lap Time Calculator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        #slideshow-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+        }
+        #category-select{
+            opacity: 0.2;
+        }
+        #category-select{
+            opacity: 0.7;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="slideshow-container"></div>
+
+        <img class="image" id="Pirelli" src="z7xHUKTAnKlUXPsW7MBvl9H5nu8myMUHQ5z7LiS4.jpg" alt="Pirelli Tires">
+        
+        <div class="category-select">
+            <h2>Select Category</h2>
+            <button value="F1">F1</button>
+            <button value="GT3">GT3</button>
+        </div>
+
+        <div id="displayResultsContainer">
+            <div id="displayResults"></div>
+        </div>
+    </div>
+
+    <script>
+        let Pirelli = document.getElementById("Pirelli");
+        let displayDiv = document.getElementById("displayResults");
+
+        const trackBaseTimes = {
+            "Suzuka": { F1: 90.344, GT3: 120.689 },
+            "Malmedy": { F1: 105.567, GT3: 130.7687 },
+            "Spielberg": { F1: 65.435, GT3: 85.112 },
+            "Monza": { F1: 80.656, GT3: 110.6556 },
+            "Towcester": { F1: 88.6677, GT3: 118.87998 },
+            "Lusail": { F1: 92.2124, GT3: 122.1355 }
+        };
+
+        let buttons = document.querySelectorAll("button");
+        buttons.forEach((elem) => {
+            elem.addEventListener("click", test);
+        });
+
+        let GG = JSON.parse(window.localStorage.getItem("Data"));
+
+        function test(event) {
+            let category = event.target.value;
+            let FastLap = getLapTime(GG.city, category, GG.id);
+            let TireStressV = TireStress(GG.temp);
+            let TiresWeather = TireChoices(GG.id);
+
+            displayResults(FastLap, TireStressV);
+            imagecontroller(TiresWeather);
+        }
+
+        function TireStress(Temp) {
+            switch (true) {
+                case (Temp > 0 && Temp <= 10): return "Minimal";
+                case (Temp > 10 && Temp <= 25): return "Low";
+                case (Temp > 25 && Temp <= 35): return "Medium";
+                case (Temp > 35 && Temp <= 45): return "High";
+                default: return "Unracable Temperatures";
+            }
+        }
+
+        function TireChoices(weatherID) {
+            switch (true) {
+                case (weatherID >= 200 && weatherID < 300): return "Wets";
+                case (weatherID >= 300 && weatherID < 400): return "Inters";
+                case (weatherID >= 500 && weatherID < 600): return "Inters";
+                case (weatherID >= 600 && weatherID < 700): return "Unracable Conditions";
+                case (weatherID >= 700 && weatherID < 800): return "Inters";
+                case (weatherID == 800): return "Slicks";
+                case (weatherID >= 801 && weatherID < 810): return "Slicks";
+                default: return "Unracable conditions";
+            }
+        }
+
+        function getLapTime(track, category, weatherID) {
+            if (!trackBaseTimes[track]) return "Track not found";
+            let baseTime = trackBaseTimes[track][category];
+            let penalty = weatherPenalty(weatherID);
+            let totalLapTime = baseTime + penalty;
+        
+            return `${Math.floor(totalLapTime / 60)}m ${(totalLapTime % 60).toFixed(3)}s`;
+        }
+
+        function weatherPenalty(weatherID) {
+            switch (true) {
+                case (weatherID >= 200 && weatherID < 300): return 10;  
+                case (weatherID >= 300 && weatherID < 400): return 8;   
+                case (weatherID >= 500 && weatherID < 600): return 6;   
+                case (weatherID >= 600 && weatherID < 700): return 15;  
+                case (weatherID >= 700 && weatherID < 800): return 5;   
+                case (weatherID == 800): return 0;       
+                case (weatherID >= 801 && weatherID < 810): return 3;   
+                default: return 20;  
+            }
+        }
+
+        function displayResults(lapTime, tireStress) {
+            displayDiv.innerHTML = ` 
+                <p><strong>Fastest Lap Time:</strong> ${lapTime}</p>
+                <p><strong>Tire Stress Level:</strong> ${tireStress}</p>`;
+                displayDiv.style.opacity=0.7;
+        }
+
+        function imagecontroller(TiresWeather) {
+            if (TiresWeather == "Slicks") {
+                Pirelli.src = "Pirelli/download.jfif";
+            } else if (TiresWeather == "Inters") {
+                Pirelli.src = "Pirelli/gomme_f1_2.jpg";
+            } else if (TiresWeather == "Wets") {
+                Pirelli.src = "Pirelli/pirelli-pole-position-wind-tunnel-tyre-blue-18-scale-12-wet.jpg";
+            }
+        }
+
+        let i = 0;
+        const slideshow = [
+            "30-team-wrt-audi-r8-lms-gt3-be.jpg",
+            "gt-world-challenge-europe-endu-2.jpg",
+            "lando-norris-mclaren-mcl38.jpg",
+            "MPSA_MLMC_POT22_LC_LC1_2723.jpg",
+            "max-verstappen-red-bull-racing.jpg",
+            "M22_5357.jpg",
+            "z7xHUKTAnKlUXPsW7MBvl9H5nu8myMUHQ5z7LiS4.jpg"
+        ];
+
+        function changeBackground() {
+            const container = document.getElementById("slideshow-container");
+            container.style.backgroundImage = `url('${slideshow[i]}')`;
+            i = (i + 1) % slideshow.length;
+        }
+
+        window.onload = function () {
+            changeBackground();
+            setInterval(changeBackground, 3000);
+        };
+    </script>
+</body>
+</html>
+
+
