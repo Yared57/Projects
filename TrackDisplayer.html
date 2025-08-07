@@ -69,7 +69,7 @@
             let TireStressV = TireStress(GG.temp);
             let TiresWeather = TireChoices(GG.id);
 
-            displayResults(FastLap, TireStressV);
+            displayResults(FastLap, TireStressV,TiresWeather);
             imagecontroller(TiresWeather);
         }
 
@@ -118,10 +118,13 @@
             }
         }
 
-        function displayResults(lapTime, tireStress) {
+        function displayResults(lapTime, tireStress,weather) {
+            const tireweatherselctor={"Slicks":"Dry Conditions","Inters":"Light Rain","Wets":"Heavy Rain"}
             displayDiv.innerHTML = ` 
                 <p><strong>Fastest Lap Time:</strong> ${lapTime}</p>
-                <p><strong>Tire Stress Level:</strong> ${tireStress}</p>`;
+                <p><strong>Tire Stress Level:</strong> ${tireStress}</p>
+                <p><strong>Racing Conditions:</strong> ${tireweatherselctor[weather]}</p>`
+                ;
                 displayDiv.style.opacity=0.7;
         }
 
